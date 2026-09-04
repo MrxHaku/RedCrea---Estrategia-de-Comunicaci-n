@@ -1,3 +1,23 @@
+.podcast{background:var(--paper)}
+.podcast-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.podcast-card{background:var(--ink);color:var(--paper);min-width:0}
+.podcast-cover{aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:space-between;padding:20px;background:var(--orange);color:var(--ink);font:11px var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.podcast-card:nth-child(2) .podcast-cover{background:var(--blue);color:var(--paper)}
+.podcast-card:nth-child(3) .podcast-cover{background:var(--yellow)}
+.podcast-cover strong{font:clamp(72px,10vw,150px) Helvetica,Arial,sans-serif;letter-spacing:-.09em;line-height:.7;align-self:end}
+.podcast-info{padding:24px 20px 20px}
+.podcast-label{font:10px var(--mono);text-transform:uppercase;color:var(--yellow)}
+.podcast-info h3{font:22px Helvetica,Arial,sans-serif;letter-spacing:-.05em;line-height:.95;overflow-wrap:anywhere;min-height:64px;margin:18px 0 26px}
+.podcast audio{display:none}
+.podcast-progress{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;gap:8px;align-items:center;font:10px var(--mono)}
+.podcast-progress input{width:100%;accent-color:var(--orange);cursor:pointer}
+.podcast-progress span:last-child{text-align:right}
+.podcast-controls{display:flex;justify-content:center;align-items:center;gap:24px;margin-top:18px}
+.podcast-controls button{color:var(--paper);font:25px Helvetica,Arial,sans-serif;line-height:1;position:relative}
+.podcast-controls button:not(.play-button){width:40px;height:46px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}
+.podcast-controls button small{font:9px var(--mono);white-space:nowrap}
+.podcast-controls .play-button{width:46px;height:46px;border-radius:50%;background:var(--orange);color:var(--ink);font-size:17px}
+@media(max-width:700px){.podcast-grid{grid-template-columns:1fr}.podcast-card{display:grid;grid-template-columns:38% 62%}.podcast-cover{aspect-ratio:auto;min-height:220px}.podcast-info{padding:18px 16px}.podcast-info h3{font-size:19px;min-height:0;margin:14px 0 22px}.podcast-controls{gap:16px}}
 /* RedCREA palette and tab branding */
 /* 1. Tokens de marca y tipografia */
 :root{--ink:#141414 !important;--paper:#ffffff !important;--orange:#FFED00 !important;--blue:#0050A0 !important;--yellow:#FFED00 !important;--mint:#ffffff !important;--line:rgba(20,20,20,.2) !important}

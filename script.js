@@ -9,6 +9,7 @@ const panelGroups = {
   inicio: ['.hero', '.intro-band'],
   propuesta: ['.hub', '.proposal', '.foundations', '.academic'],
   metodologia: ['.method', '.impact'],
+  podcast: ['.podcast'],
   participa: ['.participate'],
 };
 
@@ -124,4 +125,46 @@ document.querySelectorAll('[data-chat-question]').forEach((button) => {
     chatWindow.setAttribute('aria-hidden', 'false');
     askChat(button.dataset.chatQuestion);
   });
+});
+
+// Controles de reproducción para las piezas de audio del proyecto.
+const playerCards = document.querySelectorAll('[data-player]');
+const formatTime = (seconds) => {
+  if (!Number.isFinite(seconds)) return '0:00';
+  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+};
+
+playerCards.forEach((card) => {
+  const audio = card.querySelector('audio');
+  const playButton = card.querySelector('[data-action="play"]');
+  const progress = card.querySelector('input[type="range"]');
+  const currentTime = card.querySelector('.current-time');
+  const duration = card.querySelector('.duration');
+
+  playButton.addEventListener('click', () => {
+    playerCards.forEach((otherCard) => {
+      const otherAudio = otherCard.querySelector('audio');
+      if (otherCard !== card) {
+        otherAudio.pause();
+        otherCard.querySelector('[data-action="play"]').textContent = '▶';
+      }
+    });
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  });
+
+  card.querySelector('[data-action="back"]').addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 15); });
+  card.querySelector('[data-action="forward"]').addEventListener('click', () => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 15); });
+  progress.addEventListener('input', () => { audio.currentTime = (progress.value / 100) * audio.duration; });
+  audio.addEventListener('loadedmetadata', () => { duration.textContent = formatTime(audio.duration); });
+  audio.addEventListener('timeupdate', () => {
+    currentTime.textContent = formatTime(audio.currentTime);
+    progress.value = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+  });
+  audio.addEventListener('play', () => { playButton.textContent = 'Ⅱ'; });
+  audio.addEventListener('pause', () => { playButton.textContent = '▶'; });
+  audio.addEventListener('ended', () => { progress.value = 0; });
 });
