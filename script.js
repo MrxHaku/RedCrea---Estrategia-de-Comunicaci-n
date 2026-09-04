@@ -4,8 +4,27 @@ const mobileMenu = document.querySelector('.mobile-menu');
 const panels = document.querySelectorAll('.tab-panel');
 const navLinks = document.querySelectorAll('[data-tab-link]');
 
+// Relaciona cada pestaña con los bloques de contenido que debe mostrar.
+const panelGroups = {
+  inicio: ['.hero', '.intro-band'],
+  propuesta: ['.hub', '.proposal', '.foundations', '.academic'],
+  metodologia: ['.method', '.impact'],
+  participa: ['.participate'],
+};
+
+Object.entries(panelGroups).forEach(([panelId, selectors]) => {
+  selectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((panel) => {
+      panel.classList.add('tab-panel');
+      panel.dataset.panel = panelId;
+    });
+  });
+});
+
 function openPanel(panelId) {
-  panels.forEach((panel) => panel.classList.toggle('active', panel.dataset.panel === panelId));
+  document.querySelectorAll('.tab-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.dataset.panel === panelId);
+  });
   document.querySelectorAll('.desktop-nav a').forEach((link) => {
     link.classList.toggle('is-active', link.dataset.tabLink === panelId);
   });
@@ -13,10 +32,15 @@ function openPanel(panelId) {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// La portada es la vista inicial y conserva su contenido al cargar.
+openPanel('inicio');
+
+// Mantiene visible el estado de la barra al desplazarse.
 window.addEventListener('scroll', () => {
   header.classList.toggle('is-scrolled', window.scrollY > 20);
 }, { passive: true });
 
+// Activa una pestaña y cierra el menu movil despues de elegir una ruta.
 navLinks.forEach((link) => {
   link.addEventListener('click', (event) => {
     event.preventDefault();
@@ -28,6 +52,7 @@ navLinks.forEach((link) => {
   });
 });
 
+// Abre y cierra la navegacion movil accesible.
 menuButton.addEventListener('click', () => {
   const isOpen = mobileMenu.classList.toggle('is-open');
   document.body.classList.toggle('menu-open', isOpen);
@@ -35,6 +60,7 @@ menuButton.addEventListener('click', () => {
   mobileMenu.setAttribute('aria-hidden', String(!isOpen));
 });
 
+// Selector de rutas para estudiante, docente y funcionario.
 const routeCards = document.querySelectorAll('[data-route]');
 const routeDetails = document.querySelectorAll('[data-route-detail]');
 routeCards.forEach((card) => {
@@ -44,6 +70,7 @@ routeCards.forEach((card) => {
   });
 });
 
+// Asistente contextual y respuestas frecuentes del proyecto.
 const chatToggle = document.querySelector('.chat-toggle');
 const chatWindow = document.querySelector('.chat-window');
 const chatMessages = document.querySelector('.chat-messages');
@@ -62,6 +89,7 @@ const answers = [
   { keys: ['autores', 'autoras', 'lina', 'laura'], answer: 'El proyecto fue desarrollado por Lina María Cortés Cardona y Laura Isabel Guevara Martínez para la Maestría en Comunicación Digital, UAO, 2025.' },
 ];
 
+// Renderiza mensajes del usuario y del asistente en la ventana de chat.
 function addChatMessage(text, type) {
   const message = document.createElement('p');
   message.className = `${type}-message`;
