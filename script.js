@@ -207,6 +207,31 @@ infoModal.addEventListener('click', (event) => { if (event.target === infoModal)
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeInfoModal(); });
 
 // ============================================================
+// Animación de entrada/salida al hacer scroll para los títulos
+// principales de cada bloque: llegan desde fuera de la pantalla
+// (izquierda, derecha o abajo) hacia su lugar, y vuelven a salir
+// si el bloque deja de verse al desplazarse en sentido contrario.
+// Va primero y aislado en su propio try/catch para que, aunque
+// algo falle en otra parte del archivo (por ejemplo al pegar el
+// enlace de YouTube más abajo), este efecto nunca se vea afectado.
+// ============================================================
+try {
+  const revealItems = document.querySelectorAll('[data-reveal]');
+  if (revealItems.length && 'IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        entry.target.classList.toggle('is-visible', entry.isIntersecting);
+      });
+    }, { threshold: 0.25, rootMargin: '0px 0px -8% 0px' });
+    revealItems.forEach((item) => revealObserver.observe(item));
+  } else {
+    revealItems.forEach((item) => item.classList.add('is-visible'));
+  }
+} catch (error) {
+  console.error('No se pudo activar la animación de scroll en los títulos:', error);
+}
+
+// ============================================================
 // 🎥 VIDEO DE YOUTUBE
 // Para que el video quede visible de una vez para cualquier
 // visitante (sin que nadie tenga que pegar el enlace), escribe
@@ -216,64 +241,59 @@ document.addEventListener('keydown', (event) => { if (event.key === 'Escape') cl
 //   const YOUTUBE_VIDEO_ID = 'dQw4w9WgXcQ';
 // Si lo dejas vacío (''), la sección Recursos muestra el marco del
 // reproductor con un formulario para pegar el enlace manualmente.
+// NO borres las comillas ni el atributo data-youtube-id del HTML:
+// si necesitas escribir el ID directo en el HTML en vez de aquí,
+// hazlo dentro de las comillas de data-youtube-id="AQUI-VA-EL-ID",
+// sin quitar el nombre del atributo.
 // ============================================================
 const YOUTUBE_VIDEO_ID = '';
 
-const videoForm = document.querySelector('[data-video-form]');
-const videoScreen = document.querySelector('[data-video-screen]');
+try {
+  const videoForm = document.querySelector('[data-video-form]');
+  const videoScreen = document.querySelector('[data-video-screen]');
 
-function extractYoutubeId(value) {
-  const match = value.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-  return match ? match[1] : null;
-}
+  if (videoForm && videoScreen) {
+    const extractYoutubeId = (value) => {
+      const match = value.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+      return match ? match[1] : null;
+    };
 
-function renderYoutubeEmbed(videoId) {
-  videoScreen.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?rel=0" title="Video de RedCREA en YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
-}
+    const renderYoutubeEmbed = (videoId) => {
+      videoScreen.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?rel=0" title="Video de RedCREA en YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+    };
 
-// Si el ID quedó marcado en el código (arriba) o en el atributo
-// data-youtube-id del HTML, el video se activa solo, sin que el
-// visitante tenga que hacer nada.
-const presetVideoId = YOUTUBE_VIDEO_ID.trim() || videoScreen.dataset.youtubeId.trim();
-if (presetVideoId) {
-  renderYoutubeEmbed(presetVideoId);
-} else {
-  // Mientras no haya ID, el marco del reproductor queda visible e
-  // interactivo: al hacer clic en él, el foco salta directo al
-  // campo para pegar el enlace de YouTube.
-  const placeholder = videoScreen.querySelector('[data-video-placeholder]');
-  if (placeholder) {
-    placeholder.style.cursor = 'pointer';
-    placeholder.addEventListener('click', () => videoForm.querySelector('input').focus());
-  }
-}
+    // Si el ID quedó marcado en el código (arriba) o en el atributo
+    // data-youtube-id del HTML, el video se activa solo, sin que el
+    // visitante tenga que hacer nada. Se usa (valor || '') para que
+    // nunca falle aunque falte el atributo en el HTML.
+    const presetVideoId = (YOUTUBE_VIDEO_ID || '').trim() || (videoScreen.dataset.youtubeId || '').trim();
+    if (presetVideoId) {
+      renderYoutubeEmbed(presetVideoId);
+    } else {
+      // Mientras no haya ID, el marco del reproductor queda visible e
+      // interactivo: al hacer clic en él, el foco salta directo al
+      // campo para pegar el enlace de YouTube.
+      const placeholder = videoScreen.querySelector('[data-video-placeholder]');
+      const input = videoForm.querySelector('input');
+      if (placeholder && input) {
+        placeholder.style.cursor = 'pointer';
+        placeholder.addEventListener('click', () => input.focus());
+      }
+    }
 
-// Permite además activar o cambiar el video pegando el enlace, sin tocar el código.
-videoForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const value = videoForm.querySelector('input').value.trim();
-  const videoId = extractYoutubeId(value);
-  if (!videoId) {
-    videoScreen.innerHTML = '<div class="video-empty" data-video-placeholder><span class="play-mark">▶</span><strong>Enlace no reconocido</strong><small>Usa un enlace válido de YouTube</small></div>';
-    return;
-  }
-  renderYoutubeEmbed(videoId);
-});
-
-// ============================================================
-// Animación de entrada/salida al hacer scroll para los títulos
-// principales de cada bloque: llegan desde fuera de la pantalla
-// (izquierda, derecha o abajo) hacia su lugar, y vuelven a salir
-// si el bloque deja de verse al desplazarse en sentido contrario.
-// ============================================================
-const revealItems = document.querySelectorAll('[data-reveal]');
-if (revealItems.length && 'IntersectionObserver' in window) {
-  const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      entry.target.classList.toggle('is-visible', entry.isIntersecting);
+    // Permite además activar o cambiar el video pegando el enlace, sin tocar el código.
+    videoForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const input = videoForm.querySelector('input');
+      const value = input ? input.value.trim() : '';
+      const videoId = extractYoutubeId(value);
+      if (!videoId) {
+        videoScreen.innerHTML = '<div class="video-empty" data-video-placeholder><span class="play-mark">▶</span><strong>Enlace no reconocido</strong><small>Usa un enlace válido de YouTube</small></div>';
+        return;
+      }
+      renderYoutubeEmbed(videoId);
     });
-  }, { threshold: 0.25, rootMargin: '0px 0px -8% 0px' });
-  revealItems.forEach((item) => revealObserver.observe(item));
-} else {
-  revealItems.forEach((item) => item.classList.add('is-visible'));
+  }
+} catch (error) {
+  console.error('No se pudo activar el reproductor de YouTube:', error);
 }
