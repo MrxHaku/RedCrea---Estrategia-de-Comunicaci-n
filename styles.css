@@ -90,8 +90,8 @@
 /* RedCREA palette and tab branding */
 /* 1. Tokens de marca y tipografia */
 :root{--ink:#141414 !important;--paper:#ffffff !important;--orange:#FFED00 !important;--blue:#0050A0 !important;--yellow:#FFED00 !important;--mint:#ffffff !important;--line:rgba(20,20,20,.2) !important}
-.brand{width:132px;height:42px;align-items:center;overflow:hidden;background:#fff;padding:4px 8px}
-.brand img{width:132px;height:auto;object-fit:contain}
+.brand{width:132px;height:42px;align-items:center!important;overflow:hidden;background:#fff;padding:4px 8px}
+.brand img{width:100%;height:100%;object-fit:cover;object-position:center}
 .desktop-nav a{position:relative;padding-bottom:8px}
 .desktop-nav a.is-active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--yellow)}
 .site-header.is-scrolled{background:rgba(255,255,255,.93)!important}
