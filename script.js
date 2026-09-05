@@ -206,17 +206,74 @@ infoModal.querySelector('.modal-close').addEventListener('click', closeInfoModal
 infoModal.addEventListener('click', (event) => { if (event.target === infoModal) closeInfoModal(); });
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeInfoModal(); });
 
-// Convierte un enlace de YouTube en un reproductor embebido cuando el usuario lo suministra.
+// ============================================================
+// 🎥 VIDEO DE YOUTUBE
+// Para que el video quede visible de una vez para cualquier
+// visitante (sin que nadie tenga que pegar el enlace), escribe
+// aquí abajo el ID del video: son los 11 caracteres que aparecen
+// después de "v=" en youtube.com/watch?v=XXXXXXXXXXX, o después
+// de "youtu.be/". Ejemplo:
+//   const YOUTUBE_VIDEO_ID = 'dQw4w9WgXcQ';
+// Si lo dejas vacío (''), la sección Recursos muestra el marco del
+// reproductor con un formulario para pegar el enlace manualmente.
+// ============================================================
+const YOUTUBE_VIDEO_ID = '';
+
 const videoForm = document.querySelector('[data-video-form]');
 const videoScreen = document.querySelector('[data-video-screen]');
+
+function extractYoutubeId(value) {
+  const match = value.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+  return match ? match[1] : null;
+}
+
+function renderYoutubeEmbed(videoId) {
+  videoScreen.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?rel=0" title="Video de RedCREA en YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+}
+
+// Si el ID quedó marcado en el código (arriba) o en el atributo
+// data-youtube-id del HTML, el video se activa solo, sin que el
+// visitante tenga que hacer nada.
+const presetVideoId = YOUTUBE_VIDEO_ID.trim() || videoScreen.dataset.youtubeId.trim();
+if (presetVideoId) {
+  renderYoutubeEmbed(presetVideoId);
+} else {
+  // Mientras no haya ID, el marco del reproductor queda visible e
+  // interactivo: al hacer clic en él, el foco salta directo al
+  // campo para pegar el enlace de YouTube.
+  const placeholder = videoScreen.querySelector('[data-video-placeholder]');
+  if (placeholder) {
+    placeholder.style.cursor = 'pointer';
+    placeholder.addEventListener('click', () => videoForm.querySelector('input').focus());
+  }
+}
+
+// Permite además activar o cambiar el video pegando el enlace, sin tocar el código.
 videoForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const value = videoForm.querySelector('input').value.trim();
-  const match = value.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-  if (!match) {
-    videoScreen.querySelector('.video-empty strong').textContent = 'Enlace no reconocido';
-    videoScreen.querySelector('.video-empty small').textContent = 'Usa un enlace válido de YouTube';
+  const videoId = extractYoutubeId(value);
+  if (!videoId) {
+    videoScreen.innerHTML = '<div class="video-empty" data-video-placeholder><span class="play-mark">▶</span><strong>Enlace no reconocido</strong><small>Usa un enlace válido de YouTube</small></div>';
     return;
   }
-  videoScreen.innerHTML = `<iframe src="https://www.youtube.com/embed/${match[1]}?rel=0" title="Video de RedCREA en YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+  renderYoutubeEmbed(videoId);
 });
+
+// ============================================================
+// Animación de entrada/salida al hacer scroll para los títulos
+// principales de cada bloque: llegan desde fuera de la pantalla
+// (izquierda, derecha o abajo) hacia su lugar, y vuelven a salir
+// si el bloque deja de verse al desplazarse en sentido contrario.
+// ============================================================
+const revealItems = document.querySelectorAll('[data-reveal]');
+if (revealItems.length && 'IntersectionObserver' in window) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      entry.target.classList.toggle('is-visible', entry.isIntersecting);
+    });
+  }, { threshold: 0.25, rootMargin: '0px 0px -8% 0px' });
+  revealItems.forEach((item) => revealObserver.observe(item));
+} else {
+  revealItems.forEach((item) => item.classList.add('is-visible'));
+}
