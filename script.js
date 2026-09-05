@@ -89,7 +89,7 @@ const answers = [
   { keys: ['particip', 'co-cre', 'cocre', 'tema', 'voz'], answer: 'La participación ocurre cuando la comunidad comparte dudas, propone formatos y prueba las rutas antes de que se implementen. El Toolkit 3C resume ese enfoque: Conectar con las personas, Comprender sus necesidades y Co-crear respuestas. Por eso la estrategia no trata a la audiencia como receptora pasiva, sino como parte del diseño de la comunicación.' },
   { keys: ['metodología', 'metodologia', 'design thinking', 'archer', 'investigación', 'diagnóstico'], answer: 'El proyecto combina un enfoque mixto y participativo con investigación-acción, Design Thinking y la metodología proyectual de Bruce Archer. Primero se diagnostican canales y fricciones; después se escuchan los públicos, se diseñan rutas, se prototipan mensajes y se ajustan con la comunidad. El proceso permite validar la utilidad de una pieza antes de convertirla en un recurso institucional.' },
   { keys: ['indicador', 'métrica', 'metrica', 'impacto', 'evaluar', 'medir'], answer: 'El impacto puede revisarse en cuatro dimensiones: claridad para encontrar y comprender información; confianza en los canales institucionales; participación en consultas, co-creación y ciudadanía digital; y pertenencia a la universidad. También conviene observar resolución de consultas, uso de rutas, tiempo de respuesta y percepción de los públicos, no solo cantidad de publicaciones.' },
-  { keys: ['video', 'youtube', 'galería', 'galeria', 'imagen', 'recursos'], answer: 'La pestaña Recursos reúne formatos que amplían la explicación: un reproductor de video, imágenes institucionales de UNIAJC, modales de contexto y una galería interactiva. Puedes explorar las tarjetas para abrir información adicional y usar el campo de YouTube cuando el enlace del video esté disponible.' },
+  { keys: ['video', 'galería', 'galeria', 'imagen', 'recursos'], answer: 'La pestaña Recursos reúne formatos que amplían la explicación: un reproductor de video local, imágenes institucionales de UNIAJC, modales de contexto y una galería interactiva.' },
   { keys: ['autores', 'autoras', 'lina', 'laura'], answer: 'El proyecto fue desarrollado por Laura Isabel Guevara Martínez y Lina María Cortés Cardona para la Maestría en Comunicación Digital de la Universidad Autónoma de Occidente, 2025. La propuesta se centra en la comunidad universitaria de la Institución Universitaria Antonio José Camacho.' },
 ];
 
@@ -211,9 +211,8 @@ document.addEventListener('keydown', (event) => { if (event.key === 'Escape') cl
 // principales de cada bloque: llegan desde fuera de la pantalla
 // (izquierda, derecha o abajo) hacia su lugar, y vuelven a salir
 // si el bloque deja de verse al desplazarse en sentido contrario.
-// Va primero y aislado en su propio try/catch para que, aunque
-// algo falle en otra parte del archivo (por ejemplo al pegar el
-// enlace de YouTube más abajo), este efecto nunca se vea afectado.
+// Va primero y aislado en su propio try/catch para que un fallo en
+// otra parte del archivo no afecte este efecto.
 // ============================================================
 try {
   const revealItems = document.querySelectorAll('[data-reveal]');
@@ -231,69 +230,3 @@ try {
   console.error('No se pudo activar la animación de scroll en los títulos:', error);
 }
 
-// ============================================================
-// 🎥 VIDEO DE YOUTUBE
-// Para que el video quede visible de una vez para cualquier
-// visitante (sin que nadie tenga que pegar el enlace), escribe
-// aquí abajo el ID del video: son los 11 caracteres que aparecen
-// después de "v=" en youtube.com/watch?v=XXXXXXXXXXX, o después
-// de "youtu.be/". Ejemplo:
-//   const YOUTUBE_VIDEO_ID = 'dQw4w9WgXcQ';
-// Si lo dejas vacío (''), la sección Recursos muestra el marco del
-// reproductor con un formulario para pegar el enlace manualmente.
-// NO borres las comillas ni el atributo data-youtube-id del HTML:
-// si necesitas escribir el ID directo en el HTML en vez de aquí,
-// hazlo dentro de las comillas de data-youtube-id="AQUI-VA-EL-ID",
-// sin quitar el nombre del atributo.
-// ============================================================
-const YOUTUBE_VIDEO_ID = '';
-
-try {
-  const videoForm = document.querySelector('[data-video-form]');
-  const videoScreen = document.querySelector('[data-video-screen]');
-
-  if (videoForm && videoScreen) {
-    const extractYoutubeId = (value) => {
-      const match = value.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-      return match ? match[1] : null;
-    };
-
-    const renderYoutubeEmbed = (videoId) => {
-      videoScreen.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?rel=0" title="Video de RedCREA en YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
-    };
-
-    // Si el ID quedó marcado en el código (arriba) o en el atributo
-    // data-youtube-id del HTML, el video se activa solo, sin que el
-    // visitante tenga que hacer nada. Se usa (valor || '') para que
-    // nunca falle aunque falte el atributo en el HTML.
-    const presetVideoId = (YOUTUBE_VIDEO_ID || '').trim() || (videoScreen.dataset.youtubeId || '').trim();
-    if (presetVideoId) {
-      renderYoutubeEmbed(presetVideoId);
-    } else {
-      // Mientras no haya ID, el marco del reproductor queda visible e
-      // interactivo: al hacer clic en él, el foco salta directo al
-      // campo para pegar el enlace de YouTube.
-      const placeholder = videoScreen.querySelector('[data-video-placeholder]');
-      const input = videoForm.querySelector('input');
-      if (placeholder && input) {
-        placeholder.style.cursor = 'pointer';
-        placeholder.addEventListener('click', () => input.focus());
-      }
-    }
-
-    // Permite además activar o cambiar el video pegando el enlace, sin tocar el código.
-    videoForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const input = videoForm.querySelector('input');
-      const value = input ? input.value.trim() : '';
-      const videoId = extractYoutubeId(value);
-      if (!videoId) {
-        videoScreen.innerHTML = '<div class="video-empty" data-video-placeholder><span class="play-mark">▶</span><strong>Enlace no reconocido</strong><small>Usa un enlace válido de YouTube</small></div>';
-        return;
-      }
-      renderYoutubeEmbed(videoId);
-    });
-  }
-} catch (error) {
-  console.error('No se pudo activar el reproductor de YouTube:', error);
-}
